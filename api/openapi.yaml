@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Swagger orders service - OpenAPI 3.0
+  description: orders API
+  version: 1.0.11
+tags:
+  - name: order
+    description: Get orders by limit and offset
+paths:
+  /ping:
+    get:
+      tags:
+        - health
+      summary: Checks if the server is alive
+      operationId: ping
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: pong
+  /api/orders:
+    get:
+      tags:
+        - orders
+      summary: Get records by limit and offset
+      operationId: getOrdersList
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                items:
+                  properties:
+                    id:
+                      type: number
+                      example: 1
+                    status:
+                      type: string
+                      example: New
+                    sum:
+                      type: number
+                      example: 14700.99
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - orders
+      summary: Create an order
+      operationId: createOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                sum:
+                  example: 12500.99
+                  type: number
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: number
+                    example: 1
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /api/orders/{id}:
+    get:
+      tags:
+        - orders
+      summary: Get order by id
+      operationId: getOrder
+      parameters:
+        - name: id
+          in: path
+          description: Resource ID
+          required: true
+          schema:
+            type: integer
+            format: int
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  id:
+                    type: number
+                    example: 1
+                  status:
+                    type: string
+                    example: New
+                  sum:
+                    type: number
+                    example: 7500.99
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    example: Something went wrong
+    delete:
+      tags:
+        - orders
+      summary: Delete an order by id
+      operationId: deleteOrder
+      parameters:
+        - name: id
+          in: path
+          description: order ID
+          required: true
+          schema:
+            type: integer
+            format: int
+      responses:
+        '204':
+          description: Successful operation
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    example: Something went wrong
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Something went wrong
