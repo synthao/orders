@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"go.uber.org/config"
 )
 
@@ -29,15 +28,4 @@ func NewDBConfig() (*DB, error) {
 	}
 
 	return &c, nil
-}
-
-func (c *DB) GetDSN() string {
-	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		c.Host,
-		c.Port,
-		c.User,
-		c.Password,
-		c.Name,
-	)
 }

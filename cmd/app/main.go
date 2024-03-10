@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"github.com/synthao/orders/internal/adapter/mysql/order/repository"
 	"github.com/synthao/orders/internal/config"
+	"github.com/synthao/orders/internal/database"
 	port "github.com/synthao/orders/internal/port/http/order"
 	"github.com/synthao/orders/internal/service"
 	"go.uber.org/fx"
@@ -28,14 +28,10 @@ func main() {
 			repository.NewRepository,
 			service.NewService,
 			port.NewHandler,
-			newDBConnection,
+			database.NewConnection,
 		),
 		fx.Invoke(createHTTPServer),
 	).Run()
-}
-
-func newDBConnection(cnf *config.DB) *sqlx.DB {
-	return sqlx.MustConnect("postgres", cnf.GetDSN())
 }
 
 func newLogger(cnf *config.Logger) (*zap.Logger, error) {
@@ -60,7 +56,9 @@ func newLogger(cnf *config.Logger) (*zap.Logger, error) {
 	), nil
 }
 
-func createHTTPServer(lc fx.Lifecycle, app *fiber.App, handler *port.Handler, cnf *config.Server) {
+func createHTTPServer(lc fx.Lifecycle, app *fiber.App, handler *port.Handler, cnf *config.Server, db *sqlx.DB) {
+	database.ApplyMigrations(db)
+
 	app.Get("/ping", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("pong")
 	})
