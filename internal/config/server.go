@@ -7,7 +7,7 @@ type Server struct {
 }
 
 func NewServerConfig() (*Server, error) {
-	provider, err := config.NewYAML(config.File(name))
+	provider, err := config.NewYAML(config.File(filename))
 	if err != nil {
 		return nil, err
 	}

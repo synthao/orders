@@ -10,8 +10,15 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - ~/pg_data:/var/lib/postgresql/data
+    networks:
+      - backend
     ports:
       - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "$DB_USER", "-d", "$DB_NAME"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   server:
     build:
@@ -20,8 +27,13 @@ services:
     env_file:
       - .env
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     networks:
-      - default
+      - backend
     ports:
       - "8080:8080"
+
+networks:
+  backend:
+    driver: bridge
