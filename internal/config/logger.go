@@ -7,7 +7,7 @@ type Logger struct {
 }
 
 func NewLoggerConfig() (*Logger, error) {
-	provider, err := config.NewYAML(config.File(name))
+	provider, err := config.NewYAML(config.File(filename))
 	if err != nil {
 		return nil, err
 	}

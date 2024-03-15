@@ -1,3 +1,3 @@
 package config
 
-const name = "config.yml"
+const filename = "config.yml"
