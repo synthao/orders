@@ -37,7 +37,7 @@ func (c *DB) GetDSN() string {
 	port := getFromEnv("DB_PORT", c.Port)
 	user := getFromEnv("DB_USER", c.User)
 	password := getFromEnv("DB_PASSWORD", c.Password)
-	dbName := getFromEnv("DB_NAME", c.Password)
+	dbName := getFromEnv("DB_NAME", c.Name)
 
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
