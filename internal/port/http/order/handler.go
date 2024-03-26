@@ -14,6 +14,10 @@ type CreateRequest struct {
 	Sum float64 `json:"sum"`
 }
 
+type UpdateStatusRequest struct {
+	Status int `json:"status"`
+}
+
 type GetListResponse struct {
 	ID        int       `json:"id"`
 	Status    int       `json:"status"`
@@ -53,6 +57,33 @@ func (h *Handler) InitRoutes() {
 		}
 
 		return ctx.Status(http.StatusCreated).JSON(fiber.Map{"id": id})
+	})
+
+	// update the order status
+	h.app.Put("/api/orders/:id<int>/status", func(ctx *fiber.Ctx) error {
+
+		var req UpdateStatusRequest
+
+		orderIDParam := ctx.Params("id")
+
+		orderID, err := strconv.Atoi(orderIDParam)
+		if err != nil {
+			if err != nil {
+				return ctx.JSON(fiber.Map{"error": "Failed to parse order id"})
+			}
+		}
+
+		err = ctx.BodyParser(&req)
+		if err != nil {
+			return ctx.JSON(fiber.Map{"error": "Failed to update status. Payload parsing error"})
+		}
+
+		err = h.service.UpdateStatus(orderID, req.Status)
+		if err != nil {
+			return ctx.JSON(fiber.Map{"error": "Failed to update status"})
+		}
+
+		return ctx.SendStatus(http.StatusNoContent)
 	})
 
 	h.app.Get("/api/orders", func(ctx *fiber.Ctx) error {

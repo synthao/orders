@@ -6,12 +6,15 @@ import (
 )
 
 var ErrCreateOrder = errors.New("failed to create a order")
+var ErrUpdateOrder = errors.New("failed to update a order")
+var ErrGetOrder = errors.New("failed to get a order")
 
 type Service interface {
 	Create(item *Order) (OrderID, error)
 	GetOne(id int) (*Order, error)
 	GetList(limit, offset int) ([]Order, error)
 	Delete(id int) error
+	UpdateStatus(id, status int) error
 }
 
 type Repository interface {
@@ -19,6 +22,7 @@ type Repository interface {
 	GetOne(id int) (*Order, error)
 	GetList(limit, offset int) ([]Order, error)
 	Delete(id int) error
+	Update(order *Order) error
 }
 
 type OrderID int

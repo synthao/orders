@@ -30,30 +30,26 @@ func NewRepository(db *sqlx.DB) domain.Repository {
 }
 
 func (r *repository) Create(item *domain.Order) (domain.OrderID, error) {
-	args := map[string]interface{}{
-		"sum":    item.Sum,
-		"status": item.Status,
+	var res struct {
+		ID int `db:"id"`
 	}
 
-	exec, err := r.db.NamedExec("INSERT INTO orders(sum, status) VALUES (:name, :text)", args)
+	err := r.db.
+		QueryRowx("INSERT INTO orders(sum, status) VALUES ($1, $2) RETURNING id", item.Sum, item.ID).
+		StructScan(&res)
 	if err != nil {
-		return 0, fmt.Errorf("%w, named exec, %w", domain.ErrCreateOrder, err)
+		return 0, fmt.Errorf("%w, QueryRowx, %w", domain.ErrCreateOrder, err)
 	}
 
-	id, err := exec.LastInsertId()
-	if err != nil {
-		return 0, fmt.Errorf("%w, get last insert id, %w", domain.ErrCreateOrder, err)
-	}
-
-	return domain.OrderID(id), nil
+	return domain.OrderID(res.ID), nil
 }
 
 func (r *repository) GetOne(id int) (*domain.Order, error) {
 	var dest oneDTO
 
-	err := r.db.Get(&dest, "SELECT id, status, sum, created_at FROM orders WHERE id = ?", id)
+	err := r.db.Get(&dest, "SELECT id, status, sum, created_at FROM orders WHERE id = $1", id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w, Get, %w", domain.ErrGetOrder, err)
 	}
 
 	return &domain.Order{
@@ -73,6 +69,20 @@ func (r *repository) GetList(limit, offset int) ([]domain.Order, error) {
 	}
 
 	return fromListDTOToDomain(dest), nil
+}
+
+func (r *repository) Update(item *domain.Order) error {
+	args := map[string]interface{}{
+		"id":     item.ID,
+		"status": item.Status,
+	}
+
+	_, err := r.db.NamedExec("UPDATE orders SET status=:status WHERE id=:id", args)
+	if err != nil {
+		return fmt.Errorf("%w, named exec, %w", domain.ErrUpdateOrder, err)
+	}
+
+	return nil
 }
 
 func (r *repository) Delete(id int) error {

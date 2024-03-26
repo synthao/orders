@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"github.com/segmentio/kafka-go"
 	"github.com/synthao/orders/internal/adapter/mysql/order/repository"
 	"github.com/synthao/orders/internal/config"
 	"github.com/synthao/orders/internal/database"
@@ -25,6 +26,7 @@ func main() {
 			config.NewDBConfig,
 			config.NewLoggerConfig,
 			newLogger,
+			kafkaProducer,
 			repository.NewRepository,
 			service.NewService,
 			port.NewHandler,
@@ -59,6 +61,8 @@ func newLogger(cnf *config.Logger) (*zap.Logger, error) {
 func createHTTPServer(lc fx.Lifecycle, app *fiber.App, handler *port.Handler, cnf *config.Server, db *sqlx.DB) {
 	database.ApplyMigrations(db)
 
+	//createKafkaConnection()
+
 	app.Get("/ping", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("pong")
 	})
@@ -78,3 +82,65 @@ func createHTTPServer(lc fx.Lifecycle, app *fiber.App, handler *port.Handler, cn
 		},
 	})
 }
+
+func kafkaProducer(lc fx.Lifecycle) *kafka.Writer {
+	topic := "notifications"
+
+	writer := &kafka.Writer{
+		Addr:                   kafka.TCP("kafka:9092"), // TODO get from config
+		Topic:                  topic,                   // TODO get from config
+		Balancer:               &kafka.LeastBytes{},
+		AllowAutoTopicCreation: true, // May want to disable in production
+	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(context.Context) error {
+			// Hook into lifecycle startup here if needed
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			// Make sure to close the writer when the service is stopped.
+			return writer.Close()
+		},
+	})
+
+	return writer
+}
+
+// TODO rm
+//func createKafkaConnection() {
+//	topic := "notifications"
+//
+//	w := &kafka.Writer{
+//		Addr:                   kafka.TCP("kafka:9093"),
+//		Topic:                  topic,
+//		Balancer:               &kafka.LeastBytes{},
+//		AllowAutoTopicCreation: true, // May want to disable in production
+//	}
+//
+//	ticker := time.NewTicker(3 * time.Second)
+//
+//	go func() {
+//		for {
+//			select {
+//			case <-ticker.C:
+//				println(">> tick")
+//
+//				tn := time.Now().String()
+//
+//				msg := kafka.Message{
+//					Key:   []byte("Now"),
+//					Value: []byte(tn),
+//					Time:  time.Now(),
+//				}
+//
+//				println(tn)
+//
+//				if err := w.WriteMessages(context.Background(), msg); err != nil {
+//					fmt.Println("Failed to write messages:", err)
+//				}
+//
+//			}
+//		}
+//	}()
+//}
