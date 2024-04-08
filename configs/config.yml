@@ -5,6 +5,10 @@ db:
   port: 5432
   host: 127.0.0.1
 
+kafka:
+  address: localhost:9092
+  topic: notifications
+
 # DEBUG
 # INFO
 # WARN

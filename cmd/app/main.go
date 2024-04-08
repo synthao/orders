@@ -24,6 +24,7 @@ func main() {
 			fiber.New,
 			config.NewServerConfig,
 			config.NewDBConfig,
+			config.NewKafkaConfig,
 			config.NewLoggerConfig,
 			newLogger,
 			kafkaProducer,
@@ -61,8 +62,6 @@ func newLogger(cnf *config.Logger) (*zap.Logger, error) {
 func createHTTPServer(lc fx.Lifecycle, app *fiber.App, handler *port.Handler, cnf *config.Server, db *sqlx.DB) {
 	database.ApplyMigrations(db)
 
-	//createKafkaConnection()
-
 	app.Get("/ping", func(ctx *fiber.Ctx) error {
 		return ctx.SendString("pong")
 	})
@@ -83,12 +82,10 @@ func createHTTPServer(lc fx.Lifecycle, app *fiber.App, handler *port.Handler, cn
 	})
 }
 
-func kafkaProducer(lc fx.Lifecycle) *kafka.Writer {
-	topic := "notifications"
-
+func kafkaProducer(lc fx.Lifecycle, cnf *config.Kafka) *kafka.Writer {
 	writer := &kafka.Writer{
-		Addr:                   kafka.TCP("kafka:9092"), // TODO get from config
-		Topic:                  topic,                   // TODO get from config
+		Addr:                   kafka.TCP(cnf.GetAddress()),
+		Topic:                  cnf.GetTopic(),
 		Balancer:               &kafka.LeastBytes{},
 		AllowAutoTopicCreation: true, // May want to disable in production
 	}
@@ -106,41 +103,3 @@ func kafkaProducer(lc fx.Lifecycle) *kafka.Writer {
 
 	return writer
 }
-
-// TODO rm
-//func createKafkaConnection() {
-//	topic := "notifications"
-//
-//	w := &kafka.Writer{
-//		Addr:                   kafka.TCP("kafka:9093"),
-//		Topic:                  topic,
-//		Balancer:               &kafka.LeastBytes{},
-//		AllowAutoTopicCreation: true, // May want to disable in production
-//	}
-//
-//	ticker := time.NewTicker(3 * time.Second)
-//
-//	go func() {
-//		for {
-//			select {
-//			case <-ticker.C:
-//				println(">> tick")
-//
-//				tn := time.Now().String()
-//
-//				msg := kafka.Message{
-//					Key:   []byte("Now"),
-//					Value: []byte(tn),
-//					Time:  time.Now(),
-//				}
-//
-//				println(tn)
-//
-//				if err := w.WriteMessages(context.Background(), msg); err != nil {
-//					fmt.Println("Failed to write messages:", err)
-//				}
-//
-//			}
-//		}
-//	}()
-//}
