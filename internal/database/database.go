@@ -12,8 +12,8 @@ import (
 
 const dbName = "postgres"
 
-func NewConnection(cnf *config.DB) *sqlx.DB {
-	return sqlx.MustConnect(dbName, cnf.GetDSN())
+func NewConnection() *sqlx.DB {
+	return sqlx.MustConnect(dbName, config.GetDSN())
 }
 
 func ApplyMigrations(db *sqlx.DB) {

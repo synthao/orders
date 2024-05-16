@@ -1,22 +1,25 @@
 package config
 
-import "go.uber.org/config"
+import (
+	"errors"
+	"fmt"
+	"os"
+)
+
+var ErrMissingEnvVariable = errors.New("missing environment variable")
 
 type Server struct {
-	Port int `yaml:"port"`
+	Port string
 }
 
 func NewServerConfig() (*Server, error) {
-	provider, err := config.NewYAML(config.File(filename))
-	if err != nil {
-		return nil, err
+	port, ok := os.LookupEnv("PORT")
+	if !ok {
+		return nil, fmt.Errorf("%w, PORT", ErrMissingEnvVariable)
 	}
 
-	var c Server
-
-	err = provider.Get("server").Populate(&c)
-	if err != nil {
-		return nil, err
+	c := Server{
+		Port: port,
 	}
 
 	return &c, nil

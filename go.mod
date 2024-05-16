@@ -6,7 +6,9 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/golang-migrate/migrate/v4 v4.17.0
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
+	github.com/segmentio/kafka-go v0.4.47
 	go.uber.org/config v1.4.0
 	go.uber.org/fx v1.20.1
 	go.uber.org/zap v1.23.0
@@ -23,7 +25,6 @@ require (
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pierrec/lz4/v4 v4.1.16 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/segmentio/kafka-go v0.4.47 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect

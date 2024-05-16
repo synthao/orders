@@ -9,7 +9,7 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ${PG_DATA}:/var/lib/postgresql/data
+      - ${DB_VOLUME_PATH}:/var/lib/postgresql/data
     networks:
       - backend
     ports:
