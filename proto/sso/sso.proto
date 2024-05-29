@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "sso.v1";
+
+service Service {
+    rpc IsAuthorized(IsAuthorizedRequest) returns (IsAuthorizedResponse);
+}
+
+message IsAuthorizedRequest {
+    string token = 1;
+}
+
+message IsAuthorizedResponse {
+    bool is_authorized = 1;
+}
