@@ -9,6 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"net"
+	"os"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func newGRPCClient(params ClientParams) (*grpc.ClientConn, error) {
 		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
 	}
 
-	return grpc.Dial(net.JoinHostPort(params.Config.Host, params.Config.Port),
+	return grpc.Dial(net.JoinHostPort(os.Getenv("SSO_HOST"), os.Getenv("SSO_PORT")),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithChainUnaryInterceptor(
 			logging.UnaryClientInterceptor(interceptorLogger(params.Logger), logOpts...),
